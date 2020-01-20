@@ -24,7 +24,7 @@ exports.getRandomWord = functions.https.onRequest((request, res) => {
         // console.log("First word is " + doc.data().words);
         var word = doc.data().words[getRandomInt(doc.data().words.length)];
         console.log("Word is " + word);
-        res.status(200).send({word});
+        res.status(200).send({ word });
     }).catch(err => {
         console.log(err);
         res.status(400).send(err);
@@ -33,7 +33,7 @@ exports.getRandomWord = functions.https.onRequest((request, res) => {
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
-  }
+}
 
 // exports.addAll = functions.https.onRequest((request, response) => {
 //     // readFile();
