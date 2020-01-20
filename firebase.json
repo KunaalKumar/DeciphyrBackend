@@ -8,8 +8,8 @@
     ],
     "rewrites": [
 			{
-				"source": "/getRandomWord",
-				"function": "getRandomWord"
+				"source": "/startNewGame",
+				"function": "startNewGame"
 			},
       {
         "source": "**",
