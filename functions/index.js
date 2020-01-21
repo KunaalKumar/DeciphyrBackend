@@ -1,16 +1,21 @@
+
 const admin = require('firebase-admin');
 var serviceAccount = require("./admin.json");
 const functions = require('firebase-functions');
 const fs = require('fs');
 const readline = require('readline');
+
+const fileName = "word_list.txt";
+
 const missingTokenException = "Missing token";
 const errorVerifyingUserException = "Error verifying user";
-
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://deciphyr-253e6.firebaseio.com"
 });
+
+
 
 let db = admin.firestore();
 
@@ -20,6 +25,11 @@ let db = admin.firestore();
 // exports.helloWorld = functions.https.onRequest((request, response) => {
 //  response.send("Hello from Firebase!");
 // });
+
+exports.test = functions.https.onRequest((req, res) => {
+    readFile();
+    return res.status(200).send("This is it ");
+});
 
 // POST
 exports.startNewGame = functions.https.onRequest((req, res) => {
@@ -88,20 +98,34 @@ exports.startNewGame = functions.https.onRequest((req, res) => {
     });
 });
 
+exports.test = functions.https.onRequest((req, res) => {
+    getRandomWords(8).then(words => {
+        return res.status(401).send(words);
+    })
+    .catch(error => {
+        console.log("Error: " + error);
+        return res.status(401).send("Error");
+    });
+});
+
 // Returns list of random nouns for the amount specified
 function getRandomWords(numberOfWords) {
     let words = [];
-    return readFile().then(async list => {
+    return db.collection("Words").doc("List").get().then(doc => {
+        // console.log("First word is " + doc.data().words);
         for (var i = 0; i < numberOfWords; i++) {
             let isUnique = false;
             while (!isUnique) {
-                var word = list[getRandomInt(list.length)];
+                var word = doc.data().words[getRandomInt(doc.data().words.length)];
                 if (!words.includes(word))
                     isUnique = true
             }
             words.push(word);
         }
         return words;
+    }).catch(err => {
+        console.log(err);
+        res.status(400).send(err);
     });
 }
 
@@ -131,18 +155,29 @@ function verifyUser(idToken, isTest) {
         });
 }
 
-async function readFile() {
-    const fileStream = fs.createReadStream('word_list.txt');
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
-    let list = [];
+// exports.addAll = functions.https.onRequest((request, response) => {
+//     // readFile();
+//     readFile().then(async (list) => {
+//         console.log(list.length);
+//     db.collection("Words").doc("List").set({
+//         words: list
+//     });
+//         response.send("Hello from Firebase!");
+//     });
+// });
 
-    for await (const line of rl) {
-        // Each line in input.txt will be successively available here as `line`.
-        // console.log(`Line from file: ${line}`);
-        list.push(line);
-    }
-    return list;
-}
+// async function readFile() {
+//     const fileStream = fs.createReadStream('word_list.txt');
+//     const rl = readline.createInterface({
+//         input: fileStream,
+//         crlfDelay: Infinity
+//     });
+//     let list = [];
+
+//     for await (const line of rl) {
+//         // Each line in input.txt will be successively available here as `line`.
+//         // console.log(`Line from file: ${line}`);
+//         list.push(line);
+//     }
+//     return list;
+// }
